@@ -2,10 +2,31 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"runtime"
 	"testing"
 	"unsafe"
 )
+
+func TestReflect(t *testing.T) {
+	type Person struct {
+		Name string `json:"name"`
+		Age  int16  `json:"age"`
+	}
+
+	p := Person{
+		Name: "零零",
+		Age:  26,
+	}
+
+	r := reflect.TypeOf(p)
+
+	for i := 0; i < r.NumField(); i++ {
+		f := r.Field(i)
+		tag := f.Tag.Get("json")
+		fmt.Println(f.Name + "==" + tag)
+	}
+}
 
 func TestIf(t *testing.T) {
 	if runtime.GOOS == "linux" {
