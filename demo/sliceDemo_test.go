@@ -5,8 +5,22 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 	"unsafe"
 )
+
+func TestChannel(t *testing.T) {
+	ch := make(chan int)
+
+	go func(c chan int) {
+		a := <-c
+		fmt.Println("receive=", a)
+	}(ch)
+
+	ch <- 10
+
+	time.Sleep(2)
+}
 
 func TestReflect(t *testing.T) {
 	type Person struct {
