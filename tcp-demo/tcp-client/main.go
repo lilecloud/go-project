@@ -8,12 +8,11 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:9999")
+	conn, err := net.Dial("tcp", "127.0.0.1:8088")
 	if err != nil {
 		panic("get dial error")
 	}
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Scanln(a ...interface{})
 	for {
 		str, err := reader.ReadString('\n')
 		if err != nil {
