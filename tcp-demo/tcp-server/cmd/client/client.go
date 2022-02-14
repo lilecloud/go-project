@@ -11,7 +11,7 @@ import (
 	"github.com/lucasepe/codename"
 )
 
-var gouroutinCount int = 2
+var gouroutinCount int = 10
 
 func main() {
 	group := sync.WaitGroup{}
@@ -57,7 +57,9 @@ func startClient(group *sync.WaitGroup, no int) {
 			fmt.Println(er1r)
 			continue
 		}
-		fmt.Printf("send data=%s\n", data)
+		fmt.Printf("send id=%s data=%s\n", submit.Id, submit.Payload)
+
+		time.Sleep(1 * time.Second)
 
 		if i >= 5 {
 			quit <- struct{}{}
@@ -79,11 +81,10 @@ func handleRecv(conn net.Conn, codec frame.MyFrameCodec, quit chan struct{}) {
 
 		}
 
-		conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 
 		framePayload, err := codec.Decode(conn)
 		if err != nil {
-			fmt.Println("client codec decode err", err)
 			if e, ok := err.(net.Error); ok {
 				if e.Timeout() {
 					continue
