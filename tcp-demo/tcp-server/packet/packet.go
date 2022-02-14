@@ -27,7 +27,12 @@ func Decode(packet []byte) (Packet, error) {
 
 	switch cmdId {
 	case connCommand:
-		return nil, nil
+		connPack := ConnPacket{}
+		err := connPack.Decode(body)
+		if err != nil {
+			return nil, err
+		}
+		return &connPack, err
 	case connAck:
 		cnnAck := ConnAckPacket{}
 		err := cnnAck.Decode(body)
@@ -74,7 +79,7 @@ func Encode(p Packet) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bytes.Join([][]byte{[]byte{cmdId}, bs}, nil), nil
+	return bytes.Join([][]byte{{cmdId}, bs}, nil), nil
 }
 
 type Packet interface {
@@ -106,7 +111,7 @@ type ConnAckPacket struct {
 
 // 将packet转换成[]byte
 func (c *ConnAckPacket) Encode() ([]byte, error) {
-	return bytes.Join([][]byte{[]byte(c.Id[:8]), []byte{c.Result}}, nil), nil
+	return bytes.Join([][]byte{[]byte(c.Id[:8]), {c.Result}}, nil), nil
 }
 
 // 将 [] byte 转成packet
@@ -144,7 +149,7 @@ type SubmitAckPacket struct {
 
 // 将packet转换成[]byte
 func (c *SubmitAckPacket) Encode() ([]byte, error) {
-	return bytes.Join([][]byte{[]byte(c.Id[:8]), []byte{c.Result}}, nil), nil
+	return bytes.Join([][]byte{[]byte(c.Id[:8]), {c.Result}}, nil), nil
 }
 
 // 将 [] byte 转成packet
