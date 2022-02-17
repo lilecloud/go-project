@@ -30,13 +30,13 @@ func startClient(group *sync.WaitGroup, no int) {
 
 	quit := make(chan struct{})
 
-	conn, err := net.Dial("tcp", "127.0.0.1:9089")
+	conn, err := net.Dial("tcp", "127.0.0.1:8889")
 	if err != nil {
 		panic("get dial error")
 	}
 
 	codec := frame.MyFrameCodec{}
-	go handleRecv(conn, codec, quit)
+	go handleRecv(conn, codec, quit, no)
 
 	rng, _ := codename.DefaultRNG()
 
@@ -57,20 +57,20 @@ func startClient(group *sync.WaitGroup, no int) {
 			fmt.Println(er1r)
 			continue
 		}
-		fmt.Printf("send id=%s data=%s\n", submit.Id, submit.Payload)
+		fmt.Printf("[client %d]: send id=%s data=%s\n", no, submit.Id, submit.Payload)
 
 		time.Sleep(1 * time.Second)
 
 		if i >= 5 {
 			quit <- struct{}{}
-			fmt.Printf("[client %d]: exit ok\n", i)
+			fmt.Printf("[client %d]: exit ok\n", no)
 			return
 		}
 
 	}
 }
 
-func handleRecv(conn net.Conn, codec frame.MyFrameCodec, quit chan struct{}) {
+func handleRecv(conn net.Conn, codec frame.MyFrameCodec, quit chan struct{}, no int) {
 	defer conn.Close()
 	for {
 		select {
@@ -103,11 +103,11 @@ func handleRecv(conn net.Conn, codec frame.MyFrameCodec, quit chan struct{}) {
 		case *packet.ConnAckPacket:
 			connAck := ack.(*packet.ConnAckPacket)
 
-			fmt.Printf("recv connAck id=%s payload=%d\n", connAck.Id, connAck.Result)
+			fmt.Printf("[client %d]: recv connAck id=%s payload=%d\n", no, connAck.Id, connAck.Result)
 		case *packet.SubmitAckPacket:
 
 			submitAck := ack.(*packet.SubmitAckPacket)
-			fmt.Printf("recv submtAck id=%s payload=%d\n", submitAck.Id, submitAck.Result)
+			fmt.Printf("[client %d]: recv submtAck id=%s payload=%d\n", no, submitAck.Id, submitAck.Result)
 
 		}
 

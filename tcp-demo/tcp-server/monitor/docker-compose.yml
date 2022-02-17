@@ -1,0 +1,37 @@
+
+version: "3.2"
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    volumes:
+      - ./conf/tcp-server-prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: on-failure
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    restart: on-failure
+    links: 
+      - prometheus
+      - "ne:node_exporter"
+    ports:
+      - 3000:3000
+    
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+
+  # linux node_exporter
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    restart: always
+    container_name: node_exporter
+    ports:
+      - 9100:9100
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    volumes:
+      - '/:/host:ro,rslave'

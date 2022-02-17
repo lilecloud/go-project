@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net"
 	"tcp-server/frame"
+	"tcp-server/metrics"
 	"tcp-server/packet"
 )
 
 func main() {
-	listener, err := net.Listen("tcp", ":9089")
+	listener, err := net.Listen("tcp", ":8889")
 	if err != nil {
 		fmt.Println("lisent port err:", err)
 		return
@@ -25,7 +26,11 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-	defer conn.Close()
+	metrics.ClientConnected.Inc()
+	defer func() {
+		metrics.ClientConnected.Dec()
+		conn.Close()
+	}()
 	frameCodec := frame.MyFrameCodec{}
 	for {
 		payload, err := frameCodec.Decode(conn)
@@ -33,6 +38,7 @@ func handleConnection(conn net.Conn) {
 			// fmt.Println("decode frame payload error", err)
 			return
 		}
+		metrics.ReqRecvTotal.Add(1)
 		resultPack, err := handlePacket(payload)
 		if err != nil {
 			fmt.Println("decode frame payload error", err)
@@ -43,6 +49,7 @@ func handleConnection(conn net.Conn) {
 			fmt.Println("decode frame payload error", err)
 			return
 		}
+		metrics.RspSendTotal.Add(1)
 	}
 
 }
